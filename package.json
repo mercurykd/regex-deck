@@ -1,0 +1,85 @@
+{
+  "name": "regex-deck",
+  "displayName": "Regex Deck",
+  "description": "Live JavaScript regex tester for VS Code with match highlighting, coloured capture groups and pattern syntax highlighting.",
+  "version": "0.1.0",
+  "publisher": "mercurykd",
+  "author": "mercurykd",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Testing",
+    "Other"
+  ],
+  "keywords": [
+    "regex",
+    "regexp",
+    "regular expression",
+    "regex tester",
+    "regex101",
+    "playground",
+    "javascript",
+    "capture groups",
+    "highlighting"
+  ],
+  "galleryBanner": {
+    "color": "#14261d",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mercurykd/regex-deck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mercurykd/regex-deck/issues"
+  },
+  "homepage": "https://github.com/mercurykd/regex-deck#readme",
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onCommand:regexDeck.open",
+    "onCommand:regexDeck.openSelection"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "regexDeck.open",
+        "title": "Open Regex Deck",
+        "category": "Regex Deck"
+      },
+      {
+        "command": "regexDeck.openSelection",
+        "title": "Test Selection as Regex",
+        "category": "Regex Deck"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "regexDeck.openSelection",
+          "when": "editorHasSelection"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "regexDeck.openSelection",
+          "when": "editorHasSelection",
+          "group": "navigation@9"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "regexDeck.open",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r"
+      }
+    ]
+  },
+  "scripts": {
+    "preview": "node dev/make-preview.js",
+    "test": "node dev/test-core.js",
+    "package": "npx --yes @vscode/vsce package"
+  }
+}

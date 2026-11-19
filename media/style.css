@@ -1,0 +1,538 @@
+/* Regex Deck — webview styles */
+
+:root {
+  --mono: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace);
+  --code-size: var(--vscode-editor-font-size, var(--vscode-font-size, 13px));
+  --code-weight: var(--vscode-editor-font-weight, 400);
+  --code-line: 1.55;
+  --code-pad-y: 9px;
+  --code-pad-x: 11px;
+  --line-col: var(--vscode-panel-border, rgba(128, 128, 128, 0.28));
+}
+
+body.vscode-light,
+body.vscode-high-contrast-light {
+  --tok-esc: #9a5b00;
+  --tok-property: #0f7b6c;
+  --tok-class: #0f7b6c;
+  --tok-classb: #2f7d6d;
+  --tok-classlit: #333333;
+  --tok-quant: #b45309;
+  --tok-anchor: #7b3fc4;
+  --tok-alt: #c0392b;
+  --tok-dot: #1a6ad0;
+  --tok-nc: #6a737d;
+  --tok-look: #9a3fa8;
+  --tok-flags: #0b7a8c;
+  --tok-name: #8a6100;
+  --grp-light: 38%;
+  --grp-alpha: 0.2;
+  --grp-alpha-strong: 0.3;
+  --match-tint: hsl(146 60% 38% / 0.035);
+  --line-tint: hsl(146 62% 36% / 0.075);
+  --match-bg: hsl(146 60% 36% / 0.18);
+  --match-act-bg: hsl(146 65% 32% / 0.28);
+  --match-act-line: hsl(32 95% 42% / 0.95);
+}
+
+body.vscode-dark,
+body.vscode-high-contrast {
+  --tok-esc: #d9b26a;
+  --tok-property: #9ad3a0;
+  --tok-class: #58c7b4;
+  --tok-classb: #3fa294;
+  --tok-classlit: #d6dae0;
+  --tok-quant: #dd9a6b;
+  --tok-anchor: #c792ea;
+  --tok-alt: #e0727c;
+  --tok-dot: #79b8ff;
+  --tok-nc: #8b98a5;
+  --tok-look: #d38ad8;
+  --tok-flags: #56c8d8;
+  --tok-name: #e3d08b;
+  --grp-light: 68%;
+  --grp-alpha: 0.26;
+  --grp-alpha-strong: 0.38;
+  --match-tint: hsl(146 60% 52% / 0.045);
+  --line-tint: hsl(146 62% 52% / 0.1);
+  --match-bg: hsl(146 58% 52% / 0.24);
+  --match-act-bg: hsl(146 66% 58% / 0.38);
+  --match-act-line: hsl(38 96% 58% / 0.95);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--vscode-font-family, -apple-system, "Segoe UI", sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  overflow: hidden;
+  user-select: none;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ------------------------------------------------------------------ header */
+
+.bar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--line-col);
+  background: var(--vscode-sideBar-background, var(--vscode-editor-background));
+}
+
+.pattern-line {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.delim {
+  display: flex;
+  align-items: center;
+  padding-bottom: 1px;
+  font-family: var(--mono);
+  font-size: 1.25em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.field {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--vscode-input-border, rgba(128, 128, 128, 0.35));
+  border-radius: 5px;
+  background: var(--vscode-input-background, rgba(127, 127, 127, 0.08));
+}
+
+.field:focus-within {
+  border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.pattern-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 38px;
+}
+
+.pattern-field.invalid {
+  border-color: var(--vscode-inputValidation-errorBorder, #be1100);
+  background: var(--vscode-inputValidation-errorBackground, rgba(190, 17, 0, 0.08));
+}
+
+.field .mirror {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mirror-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: var(--code-pad-y) var(--code-pad-x);
+  white-space: pre;
+  tab-size: 4;
+  font-family: var(--mono);
+  font-size: var(--code-size);
+  font-weight: var(--code-weight);
+  line-height: var(--code-line);
+  color: var(--vscode-editor-foreground, #ccc);
+  will-change: transform;
+}
+
+.field textarea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: var(--code-pad-y) var(--code-pad-x);
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--vscode-editorCursor-foreground, var(--vscode-foreground, #ddd));
+  font-family: var(--mono);
+  font-size: var(--code-size);
+  font-weight: var(--code-weight);
+  line-height: var(--code-line);
+  letter-spacing: normal;
+  white-space: pre;
+  tab-size: 4;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.pattern-field textarea {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.pattern-field textarea::-webkit-scrollbar,
+.pattern-field .mirror::-webkit-scrollbar {
+  display: none;
+}
+
+.field textarea::selection {
+  background: var(--vscode-editor-selectionBackground, rgba(64, 128, 255, 0.35));
+  color: transparent;
+}
+
+.field.wrapped textarea,
+.field.wrapped .mirror-inner {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* flags --------------------------------------------------------------- */
+
+.flags {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.flag {
+  min-width: 24px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--vscode-button-border, rgba(128, 128, 128, 0.35));
+  border-radius: 4px;
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 80ms linear, color 80ms linear;
+}
+
+.flag:hover {
+  background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.15));
+  color: var(--vscode-foreground);
+}
+
+.flag.on {
+  background: var(--vscode-button-background, #0e639c);
+  border-color: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #fff);
+  font-weight: 600;
+}
+
+.status-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 18px;
+  font-size: 12px;
+}
+
+.status {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status.ok { color: var(--vscode-descriptionForeground); }
+.status.err { color: var(--vscode-errorForeground, #f48771); font-family: var(--mono); font-size: 11.5px; }
+.stats { flex: 0 0 auto; color: var(--vscode-descriptionForeground); opacity: 0.75; }
+
+/* ------------------------------------------------------------------ panes */
+
+.panes {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.text-pane {
+  flex: 1 1 auto;
+}
+
+.side-pane {
+  flex: 0 0 320px;
+  border-left: 1px solid var(--line-col);
+  background: var(--vscode-sideBar-background, transparent);
+}
+
+.pane-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vscode-descriptionForeground);
+  border-bottom: 1px solid var(--line-col);
+}
+
+.pane-title { font-weight: 600; }
+.pane-header .grow { flex: 1 1 auto; }
+.pane-header .count { font-variant-numeric: tabular-nums; }
+
+.mini-btn {
+  padding: 2px 7px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.mini-btn:hover {
+  background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.15));
+  color: var(--vscode-foreground);
+}
+
+.editor {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor textarea {
+  user-select: text;
+}
+
+/* --------------------------------------------------------- match list/side */
+
+.legend {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--line-col);
+  font-size: 11px;
+}
+
+.match-list {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 6px;
+  user-select: text;
+}
+
+.match {
+  padding: 5px 7px 6px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.match:hover { background: var(--vscode-list-hoverBackground, rgba(128, 128, 128, 0.1)); }
+
+.match.active {
+  background: var(--vscode-list-activeSelectionBackground, rgba(0, 127, 212, 0.25));
+  border-color: var(--vscode-focusBorder, rgba(0, 127, 212, 0.6));
+}
+
+.m-top {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.m-num {
+  min-width: 18px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgba(128, 128, 128, 0.18);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.m-loc { font-family: var(--mono); }
+.m-len { margin-left: auto; opacity: 0.8; }
+
+.m-snippet {
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--vscode-editor-foreground);
+}
+
+.m-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 1px 6px 1px 4px;
+  border-radius: 9px;
+  background: rgba(128, 128, 128, 0.13);
+  font-size: 10.5px;
+  color: var(--vscode-descriptionForeground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip > i {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: hsl(var(--gh, 210) 85% 55%);
+}
+
+.chip.grp-value {
+  font-family: var(--mono);
+  color: var(--vscode-editor-foreground);
+}
+
+.dim { opacity: 0.6; font-style: italic; }
+
+.empty {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+}
+
+/* ------------------------------------------------------------- highlight */
+
+/* very faint "the pattern matched somewhere" wash over the whole test text */
+.editor.has-match .mirror-inner {
+  background: var(--match-tint);
+  border-radius: 2px;
+}
+
+/* stronger green over the lines that actually contain a match */
+.ln {
+  background: var(--line-tint);
+}
+
+/* whole match */
+.m {
+  background: var(--match-bg);
+}
+
+.m.act {
+  background: var(--match-act-bg);
+  border-radius: 2px;
+}
+
+.m.act,
+.grp.act {
+  box-shadow: inset 0 -2px 0 var(--match-act-line);
+}
+
+/* capture groups */
+.grp {
+  background: hsl(var(--gh, 210) 85% 55% / var(--grp-alpha, 0.2));
+  border-radius: 2px;
+}
+
+.m.act .grp {
+  background: hsl(var(--gh, 210) 85% 55% / var(--grp-alpha-strong, 0.3));
+}
+
+/* zero-width matches */
+.zero {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin: 0 -1px;
+  vertical-align: text-bottom;
+  background: var(--vscode-editor-findMatchBorder, #d18616);
+  border-radius: 1px;
+}
+
+.zero.act {
+  width: 3px;
+  margin: 0 -1.5px;
+  background: var(--vscode-focusBorder, #007fd4);
+}
+
+/* group palette (shared by pattern tokens and text highlights) */
+.g1, .p-g1 { --gh: 205; }
+.g2, .p-g2 { --gh: 335; }
+.g3, .p-g3 { --gh: 145; }
+.g4, .p-g4 { --gh: 40; }
+.g5, .p-g5 { --gh: 275; }
+.g6, .p-g6 { --gh: 5; }
+.g7, .p-g7 { --gh: 185; }
+.g8, .p-g8 { --gh: 95; }
+.g9, .p-g9 { --gh: 320; }
+.g10, .p-g10 { --gh: 165; }
+.g11, .p-g11 { --gh: 250; }
+.g12, .p-g12 { --gh: 65; }
+
+/* ------------------------------------------------------ pattern token colors */
+
+.p-g { color: hsl(var(--gh, 210) 80% var(--grp-light, 60%)); }
+.p-g.p-name { font-style: italic; color: var(--tok-name); }
+.p-nc { color: var(--tok-nc); }
+.p-look { color: var(--tok-look); }
+.p-flags { color: var(--tok-flags); }
+.p-flagchar { color: var(--tok-flags); font-weight: 700; }
+.p-esc { color: var(--tok-esc); }
+.p-property { color: var(--tok-property); }
+.p-backref { color: var(--tok-property); }
+.p-classb { color: var(--tok-classb); }
+.p-classlit { color: var(--tok-classlit); }
+.p-setop { color: var(--tok-alt); font-weight: 700; }
+.p-quant { color: var(--tok-quant); }
+.p-anchor { color: var(--tok-anchor); }
+.p-alt { color: var(--tok-alt); }
+.p-dot { color: var(--tok-dot); }
+.p-lit { color: var(--vscode-editor-foreground); }
+.p-unmatched { color: var(--vscode-errorForeground, #f48771); }
+.p-inclass { font-style: normal; }
+
+/* -------------------------------------------------------------- responsive */
+
+@media (max-width: 760px) {
+  .panes { flex-direction: column; }
+  .side-pane {
+    flex: 0 0 42%;
+    border-left: 0;
+    border-top: 1px solid var(--line-col);
+  }
+}

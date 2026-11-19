@@ -1,0 +1,114 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+# Trusted publishing: GitHub mints an OIDC token that the Marketplace exchanges
+# for a short-lived credential, so no PAT is stored in the repository.
+# Before the first run, create a Trusted Publishing policy for this repository:
+#   Publisher:        mercurykd
+#   Repository owner: mercurykd
+#   Repository:       regex-deck
+#   Workflow:         publish.yml
+#   Environment:      leave empty (this workflow does not use an environment)
+#
+# Open VSX trusted publishing requires a trusted publisher registered for this
+# repository there; until that exists, OVSX_PAT is what publishes to Open VSX.
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: vscode-marketplace-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Node version
+        run: node --version
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Verify tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          node -e "const p=require('./package.json');const t=process.env.TAG_NAME.replace(/^v/,'');if(t!==p.version){console.error('Tag '+process.env.TAG_NAME+' does not match package.json version '+p.version);process.exit(1)}"
+
+      # One VSIX, shipped everywhere: the Marketplace, Open VSX and the GitHub
+      # release all get the file this step produced.
+      - name: Package
+        run: npx --yes @vscode/vsce@latest package --no-dependencies --out regex-deck.vsix
+
+      - name: Publish to the VS Code Marketplace
+        run: npx --yes @vscode/vsce@latest publish --oidc --skip-duplicate --packagePath regex-deck.vsix
+
+      - name: Publish to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          set -euo pipefail
+          publisher="$(node -p "require('./package.json').publisher")"
+          name="$(node -p "require('./package.json').name")"
+          version="$(node -p "require('./package.json').version")"
+
+          # Open VSX keeps the extensions of a namespace that also exists in
+          # another gallery inactive until that namespace is claimed and verified.
+          # While that is pending, a refused publish is a warning, not a broken
+          # release: the version is accepted, it just stays invisible for now.
+          verified="$(node -e "fetch('https://open-vsx.org/api/' + process.argv[1]).then(r => r.ok ? r.json() : Promise.reject(new Error(String(r.status)))).then(n => { process.stdout.write(n.verified ? 'true' : 'false') }).catch(() => process.stdout.write('false'))" "$publisher")"
+
+          # Open VSX has no --skip-duplicate, so a re-run of the same tag has to
+          # recognise the version the registry already has. Not being able to look
+          # the extension up counts as "not published yet".
+          if node -e "fetch('https://open-vsx.org/api/' + process.argv[1] + '/' + process.argv[2]).then(r => r.ok ? r.json() : Promise.reject(new Error(String(r.status)))).then(m => { process.exitCode = (m.allVersions && m.allVersions[process.argv[3]]) ? 0 : 1 }).catch(() => { process.exitCode = 1 })" "$publisher" "$name" "$version"; then
+            echo "$publisher.$name $version is already on Open VSX"
+            exit 0
+          fi
+
+          publish_ovsx() {
+            if [ -n "${OVSX_PAT:-}" ]; then
+              npx --yes ovsx@latest publish regex-deck.vsix
+            else
+              # Without a token ovsx exchanges this workflow's OIDC token, which
+              # needs a trusted publisher registered for the repository on
+              # open-vsx.org.
+              env -u OVSX_PAT npx --yes ovsx@latest publish regex-deck.vsix --trusted-publishing
+            fi
+          }
+
+          if [ "$verified" = "true" ]; then
+            publish_ovsx
+          else
+            echo "::warning::namespace $publisher is not verified on Open VSX yet, so the extension stays inactive until it is claimed"
+            publish_ovsx || echo "::warning::Open VSX publish failed while the namespace is unverified; the release continues"
+          fi
+
+      - name: Attach the VSIX to a GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" regex-deck.vsix --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" regex-deck.vsix --title "$GITHUB_REF_NAME" --generate-notes
+          fi
