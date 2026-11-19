@@ -2,6 +2,15 @@
 
 All notable changes to Regex Deck are documented in this file.
 
+## [0.1.1] — 2026-11-19
+
+Metadata cleanup for the first Marketplace upload; no functional changes.
+
+### Changed
+
+- Removed the third-party `regex101` keyword from the manifest.
+- Dropped the localhost URL from the README development instructions.
+
 ## [0.1.0] — 2026-11-19
 
 Initial public release.
@@ -19,4 +28,5 @@ Initial public release.
 - Soft-wrap toggle and persisted panel state.
 - Standalone browser preview and Node test suite for development.
 
+[0.1.1]: https://github.com/mercurykd/regex-deck/releases/tag/v0.1.1
 [0.1.0]: https://github.com/mercurykd/regex-deck/releases/tag/v0.1.0

@@ -21,7 +21,7 @@ highlighting update as you type.
 
 ## Install
 
-From the Marketplace (after publishing):
+From the Marketplace:
 [Regex Deck on the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=mercurykd.regex-deck).
 
 ```bash
@@ -82,7 +82,7 @@ dependencies.
 ```bash
 node dev/test-core.js      # tokenizer, scanner and highlight tests
 node dev/make-preview.js   # build the standalone browser preview
-node dev/serve.js 8765     # open http://127.0.0.1:8765/dev/preview.html
+node dev/serve.js 8765     # then open dev/preview.html from that server
 ```
 
 To run the extension, open the folder in VS Code and press <kbd>F5</kbd>
