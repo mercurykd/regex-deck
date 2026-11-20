@@ -2,7 +2,7 @@
   "name": "regex-deck",
   "displayName": "Regex Deck",
   "description": "Live JavaScript regex tester for VS Code with match highlighting, coloured capture groups and pattern syntax highlighting.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "mercurykd",
   "author": "mercurykd",
   "license": "MIT",
