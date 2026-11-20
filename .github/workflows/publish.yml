@@ -60,7 +60,11 @@ jobs:
       - name: Publish to the VS Code Marketplace
         run: npx --yes @vscode/vsce@latest publish --oidc --skip-duplicate --packagePath regex-deck.vsix
 
+      # The Marketplace scanner occasionally rejects a valid package while it is
+      # under moderation. Open VSX and the GitHub release still ship the same
+      # VSIX in that case; the job stays red because the Marketplace step failed.
       - name: Publish to Open VSX
+        if: ${{ !cancelled() && hashFiles('regex-deck.vsix') != '' }}
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
         run: |
@@ -102,7 +106,7 @@ jobs:
           fi
 
       - name: Attach the VSIX to a GitHub release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/') && hashFiles('regex-deck.vsix') != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

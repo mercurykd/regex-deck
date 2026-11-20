@@ -130,6 +130,10 @@ one VSIX and then:
   namespace produces a warning and does not break the release;
 - attaches the VSIX to the GitHub release for the tag.
 
+Open VSX and the GitHub release still run when the Marketplace rejects the
+upload (for example while an extension is under moderation); the job itself
+stays red because the Marketplace step failed.
+
 For a private repository the Marketplace policy must be used within 48 hours of
 creation; the first successful publish activates it permanently.
 

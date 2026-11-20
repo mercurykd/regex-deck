@@ -6,6 +6,10 @@ All notable changes to Regex Deck are documented in this file.
 
 Metadata cleanup for the first Marketplace upload; no functional changes.
 
+### Added
+
+- Extension icon for the Marketplace listing.
+
 ### Changed
 
 - Removed the third-party `regex101` keyword from the manifest.
